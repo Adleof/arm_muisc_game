@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using static UnityEngine.ParticleSystem;
 
 public class coinbehavior : MonoBehaviour
 {
+    private ParticleSystem ps;
     public UnityEvent eaten;
     public UnityEvent miss;
     public float movespeed;
@@ -41,6 +43,7 @@ public class coinbehavior : MonoBehaviour
         mymanager = GameObject.FindGameObjectWithTag("coinManager").GetComponent<CoinManager>();
         //eaten.AddListener(GameObject.FindGameObjectWithTag("Player").GetComponent<ActorController>().addscore);
         myplayer = GameObject.FindGameObjectWithTag("Player").GetComponent<ActorController>();
+        ps = GameObject.FindGameObjectWithTag("Player").GetComponent<ParticleSystem>();
         eaten.AddListener(mymanager.onEatcoin);
         miss.AddListener(mymanager.onMiss);
         mymanager.updateang.AddListener(this.onupdatepaddle);
@@ -102,6 +105,7 @@ public class coinbehavior : MonoBehaviour
             {
                 eaten.Invoke();
                 Destroy(gameObject);
+                ps.Play();
             }
             else
             {
