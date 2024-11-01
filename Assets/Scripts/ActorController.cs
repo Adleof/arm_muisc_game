@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using UnityEngine.VFX;
 using UnityEngine.Windows;
 
 [RequireComponent(typeof(CharacterController))]
@@ -16,6 +17,9 @@ public class ActorController : MonoBehaviour
     private float currentV;
     private Vector3 lastv;
     //private Transform myt;
+
+    public VisualEffect vf;
+    public int spawnposid;
     
     //for fps count---------------------
     public float updateInterval = 0.5F;
@@ -45,6 +49,7 @@ public class ActorController : MonoBehaviour
         frames = 0;
         //score = 0;
         movecirclerad = 1.9f;
+        spawnposid = Shader.PropertyToID("spawnpos");
     }
 
     public void mouseposcallback(InputAction.CallbackContext context)
@@ -83,7 +88,10 @@ public class ActorController : MonoBehaviour
     private void circlemove(Vector2 inp)
     {
         curang = Mathf.Atan2(inp.y-1080/2, inp.x-1920/2);
-        transform.position = new Vector3(Mathf.Cos(curang) * movecirclerad, Mathf.Sin(curang) * movecirclerad, transform.position.z);
+        Vector3 newpos = new Vector3(Mathf.Cos(curang) * movecirclerad, Mathf.Sin(curang) * movecirclerad, transform.position.z);
+        transform.position = newpos;
+        vf.SetVector3(spawnposid, newpos);
+
     }
 
     private void fpstick()

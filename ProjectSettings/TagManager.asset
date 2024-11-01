@@ -6,6 +6,7 @@ TagManager:
   tags:
   - coins
   - coinManager
+  - PlayerTail
   layers:
   - Default
   - TransparentFX

@@ -56,7 +56,8 @@ public class CamCrontroller : MonoBehaviour
     private void camrot_mousepos(Vector2 inp)
     {
         float ang = Mathf.Atan2(inp.y, inp.x);
-        float mag = inp.magnitude/1000f;
+        //float mag = inp.magnitude/1000f;
+        float mag = 1.0f;
         Vector3 lokatpos = new Vector3(Mathf.Cos(ang) * mag * cam_lookat_scale, Mathf.Sin(ang) * mag * cam_lookat_scale, 3);
         transform.position = lokatpos+(pivot-lokatpos)*cam_actor_dist/(cam_actor_dist - pivot.magnitude);
         transform.rotation = Quaternion.LookRotation(lokatpos - pivot, new Vector3(0, 1, 0));

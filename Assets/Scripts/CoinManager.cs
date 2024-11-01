@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.VFX;
 
 public class CoinManager : MonoBehaviour
 {
+    public GameObject postprocess;
+    private Bloom bloom;
     public UnityEvent<int,int> updateUI;
 
     public UnityEvent<float,float,float> updateang;
@@ -14,10 +19,12 @@ public class CoinManager : MonoBehaviour
     public float scale_rad;
     public float roc;//radius of curvature
     public float movespeed;
+    public float random_factor;
 
     public GameObject coinPrefab;
-    //public AudioSource coinsong;
+    public AudioSource sounds;
     public AudioClip coinsong;
+    public AudioClip hitsound;
     public float movecirclerad;
     private double[] song;
     public bool start;
@@ -31,26 +38,47 @@ public class CoinManager : MonoBehaviour
     private float lasttime;
     public int combo;
     public int score;
+    public VisualEffect vf;
+    public int tailColorid;
 
-
+    private void changetailcolor()
+    {
+        Gradient g = vf.GetGradient(tailColorid);
+        var colors = new GradientColorKey[2];
+        Color t = Color.HSVToRGB(193f / 360f, 1f, 0.4f + 0.06f * Mathf.Clamp(combo, 1, 10));
+        //t = Color.Lerp(t, Color.HSVToRGB(1f, 1f, 1f), (Mathf.Clamp(combo, 10, 20)-10f)/10f);
+        //Debug.Log(t);
+        colors[0] = new GradientColorKey(t*1.5f, 0.0f);
+        colors[1] = new GradientColorKey(Color.white, 1.0f);
+        g.SetKeys(colors, g.alphaKeys);
+        vf.SetGradient(tailColorid, g);
+        bloom.intensity.Override(Mathf.Lerp(1.6f, 2.7f, Mathf.Clamp(combo, 1, 10) / 10f));
+    }
     public void onEatcoin()
     {
+        //AudioSource.PlayClipAtPoint(hitsound, transform.position);
+        sounds.PlayOneShot(hitsound,0.08f);
+        //AudioSource   
         combo++;
-        score += Mathf.Clamp(combo,1,10);
-        Debug.Log("eaten");
+        score += Mathf.Clamp(combo,1,20);
+        //Debug.Log("eaten");
         updateUI.Invoke(combo,score);
+        changetailcolor();
     }
 
     public void onMiss()
     {
-        Debug.Log("miss");
+        //Debug.Log("miss");
         combo = 0;
         updateUI.Invoke(combo, score);
+        changetailcolor();
     }
 
     // Start is called before the first frame update
     void Start()
     {
+        postprocess.GetComponent<Volume>().profile.TryGet<Bloom>(out bloom);
+        sounds = gameObject.GetComponent<AudioSource>();
         start = false;
        // song = new double[] {5.34590149,  6.01444483,  6.6246829 ,  7.21238947,  7.80988955,
        // 8.35102582,  8.9306097 ,  9.58159471, 10.15284634, 10.74267721,
@@ -96,11 +124,14 @@ public class CoinManager : MonoBehaviour
         roc = 3.8f;//1.9, scale0.5
         scale_rad = 0.3f;
         movespeed = -10f;
+        random_factor = 1f;
+        tailColorid = Shader.PropertyToID("tailColor");
     }
 
     // Update is called once per frame
     void Update()
     {
+        //vf.SetVector3(spawnposid, transform.position);
         if (paddleangle != previousang)
         {
             previousang = paddleangle;
@@ -119,7 +150,7 @@ public class CoinManager : MonoBehaviour
             float td = (float)song[curindex] - lasttime;
             lasttime = (float)song[curindex];
             curindex++;
-            ang += (Random.value-0.5f)* Mathf.PI*td;
+            ang += (Random.value-0.5f)* Mathf.PI*td* random_factor;
             Instantiate(coinPrefab, new Vector3(Mathf.Cos(ang) * movecirclerad, Mathf.Sin(ang) * movecirclerad, 25), Quaternion.Euler(0, 0, ang*Mathf.Rad2Deg));
             //Debug.Log("coin created");
         }
